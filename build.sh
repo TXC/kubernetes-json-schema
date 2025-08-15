@@ -24,7 +24,7 @@ lowestver="v1.5.0"
 URL="https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100"
 while [ "$URL" ]; do
   #RESP=$(curl -i -Ss "$URL")
-  RESP=$(curl -i -Ss -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' "$URL")
+  RESP=$(curl -i -Ss -H "Authorization: Bearer ${GITHUB_TOKEN}" "${URL}")
   HEADERS=$(echo "$RESP" | sed '/^\r$/q')
   URL=$(echo "$HEADERS" | sed -n -E 's/Link:.*<(.*?)>; rel="next".*/\1/Ip')
   echo "$RESP" | sed '1,/^\r$/d' | jq -r '.[] | select(.prerelease == false) | .tag_name' | sort -V | \

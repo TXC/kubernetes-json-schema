@@ -41,6 +41,8 @@ jobs:
           pip install openapi2jsonschema
 
       - name: Build files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash build.sh
 
       - name: Build site
