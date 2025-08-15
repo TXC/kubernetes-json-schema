@@ -7,12 +7,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -30,7 +28,7 @@ jobs:
           pip install "pyyaml==5.4.1" --no-build-isolation
           pip install openapi2jsonschema
 
-      - name: Do the work
+      - name: Build files
         run: bash build.sh
 
       - name: Build site
@@ -43,6 +41,19 @@ jobs:
         with:
           path: './output'
 
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

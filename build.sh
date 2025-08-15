@@ -16,29 +16,24 @@ declare -a arr=(master)
 
 outputdir="output"
 binary="openapi2jsonschema"
+lowestver="v1.5.0"
 
 ###
 
-if [ ! -f "tags.json" ]; then
-  RESULT=""
-  URL="https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100"
-  while [ "$URL" ]; do
-    #RESP=$(curl -i -Ss -H "Authorization: token $GITHUB_TOKEN" "$URL")
-    RESP=$(curl -i -Ss "$URL")
-    HEADERS=$(echo "$RESP" | sed '/^\r$/q')
-    URL=$(echo "$HEADERS" | sed -n -E 's/Link:.*<(.*?)>; rel="next".*/\1/Ip')
-    RESULT="$RESULT $(echo "$RESP" | sed '1,/^\r$/d')"
-  done
-else
-  RESULT=$(cat tags.json)
-fi;
 
-lowestver="v1.5.0"
-echo $RESULT | jq -r '.[] | select(.prerelease == false) | .tag_name' | sort -V | while read -r line; do
-  if [ "$(printf '%s\n' "$lowestver" "$line" | sort -V | head -n1)" = "$lowestver" ]; then
-    continue;
-  fi;
-  arr+=("$line")
+URL="https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100"
+while [ "$URL" ]; do
+  #RESP=$(curl -i -Ss "$URL")
+  RESP=$(curl -i -Ss -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' "$URL")
+  HEADERS=$(echo "$RESP" | sed '/^\r$/q')
+  URL=$(echo "$HEADERS" | sed -n -E 's/Link:.*<(.*?)>; rel="next".*/\1/Ip')
+  echo "$RESP" | sed '1,/^\r$/d' | jq -r '.[] | select(.prerelease == false) | .tag_name' | sort -V | \
+  while read -r line; do
+    if [ "$(printf '%s\n' "$lowestver" "$line" | sort -V | head -n1)" = "$lowestver" ]; then
+      continue;
+    fi;
+    arr+=("$line")
+  done
 done
 
 if [ ! -d "${outputdir}" ]; then
