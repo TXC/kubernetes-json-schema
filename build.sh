@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # DEBUG
-#set -xe
-set -e
+set -xe
+#set -e
 
 # This script uses openapi2jsonschema to generate a set of JSON schemas for
 # the specified Kubernetes versions in three different flavours:
